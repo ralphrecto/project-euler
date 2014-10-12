@@ -8,7 +8,7 @@ module BigNum = struct
             else acc in
         (inner pde, pdr)
 
-    let add l1 l2 = 
+    let add (l1: bignum) (l2: bignum): bignum =
         let foldf (d1, d2) (carry, acc_lst) =
             let n = d1 + d2 + carry in
             (n / 10, (n mod 10)::acc_lst) in
@@ -21,4 +21,10 @@ module BigNum = struct
             if m = 1 then acc
             else inner (add acc l) (m - 1) in
         inner l n
+
+    let to_int (l: bignum): int =
+      let _, n = List.fold_right 
+        (fun d (place, sum) -> (place * 10, sum + (d * place))) l (1, 0) in 
+      n
+
 end

@@ -12,9 +12,20 @@ module Util = struct
 
   let range bottom top =
     let rec inner acc i =
-      if i != bottom then
+      if i >= bottom then
         inner (i :: acc) (i - 1)
       else acc in
     inner [] top
+
+  let permute =
+    let permute' f els =
+      match els with
+      | [] -> [[]]
+      | _ -> 
+        List.flatten (List.map (fun x -> 
+          let tl_permute = f (List.filter (fun y -> y <> x) els) in
+          List.map (fun subl -> x :: subl) tl_permute) els) in
+    memoize permute'
+
 end
 
