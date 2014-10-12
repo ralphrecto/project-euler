@@ -27,5 +27,8 @@ module Util = struct
           List.map (fun subl -> x :: subl) tl_permute) els) in
     memoize permute'
 
+  let listmax l =
+    List.fold_left (fun max n -> if n > max then n else max) min_int l
+
 end
 
