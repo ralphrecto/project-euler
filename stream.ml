@@ -2,6 +2,7 @@
 module MyStream = struct
   type 'a t = Nil | Cons of 'a * (unit -> 'a t)
 
+  (* takes at most n elements (returns less if stream is shorter) *)
   let take (s: 'a t) (n: int): 'a list =
     let rec inner acc s' m =
       match s' with
@@ -46,6 +47,23 @@ module MyStream = struct
 
   let rec const n = Cons (n, fun () -> const n)
   let rec skip n = Cons (n, fun () -> merge (const n) (skip n) ( + ))
+
+  let rec stream_of_list(l: 'a list): 'a t =
+    match l with
+    | [] -> Nil
+    | hd :: tl -> Cons (hd, fun () -> stream_of_list tl)
+
+  (* if f returns true, take element from first stream, else the second *)
+  let rec combine (s1: 'a t)(s2: 'a t)(f: 'a -> 'a -> bool): 'a t =
+    match s1, s2 with
+    | Nil, _ -> s2
+    | _, Nil -> s1
+    | Cons (x1, thunk1), Cons (x2, thunk2) ->
+      let res = f x1 x2 in
+      if res then
+        Cons (x1, fun () -> combine (thunk1 ()) s2 f)
+      else
+        Cons (x2, fun () -> combine s1 (thunk2 ()) f)
 
 end
 
