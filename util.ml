@@ -41,5 +41,25 @@ module Util = struct
         else false in
     BatList.take_while (first k)
 
+  let factorize =
+    let factorize' f n =  
+      let rec inner m =
+        if n = m then [m]
+        else if n mod m = 0 then
+          List.rev_append (f m) (f (n/m))
+        else inner (m + 1) in
+      if n = 1 then [1]
+      else inner 2 in
+    memoize factorize'
+
+  let unique l =
+    let rec inner acc subl =
+      match subl with
+      | [] -> List.rev acc
+      | hd :: tl -> 
+          if List.mem hd tl then inner acc tl
+          else inner (hd::acc) tl in
+    inner [] l
+
 end
 
