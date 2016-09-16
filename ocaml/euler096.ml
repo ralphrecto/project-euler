@@ -1,12 +1,11 @@
 #require "core"
 #require "batteries"
+#use "util.ml"
 
-let strlist = Core.Std.In_channel.read_lines "./txt/euler096.txt"
-let str = List.fold_left ( ^ ) "" strlist
-let charlist = BatString.to_list str
+open ListMonad
 
 (* sq, cell, row *)
-type cellpos = int * int * int
+type cellnpos = int * int * int
 
 (* value, possibleValues *)
 type cell = {pos: cellpos; value: int option; val_opts: int list}
@@ -71,6 +70,36 @@ let rec solve (b: board): board option =
           | None, _  -> result
           | Some _, _ -> acc in
         List.fold_left find None results
+
+let sq row col = (row/3)*3 + (col/3)
+
+let new_board =
+  let pairs = BatList.cartesian_product (Util.range 0 8) (Util.range 0 8) in
+  let f (row, col) = 
+    {pos = (sq row col, row, col); value = None; val_opts = (Util.range 0 8)} in
+  List.map f pairs
+
+let char_to_int ch =
+  (int_of_char ch) - (int_of_char '0')
+
+let boards = 
+  let strlist = Core.Std.In_channel.read_lines "./txt/euler096.txt" in
+  let listnum = List.combine strlist (Util.range 0 ((List.length strlist)-1)) in
+  let f (acc, cur_board) (str, ln) =
+    let row = ln mod 10 in
+    if row = 0 then (cur_board::acc, new_board)
+    else 
+      let mapi_f col ch = (col, ch) in
+      let chars = BatList.mapi mapi_f (BatString.to_list str) in
+      let fold_f board' (col, ch) = 
+        let c = {pos = (sq row col, row, col); value = None; val_opts = []} in
+        let i = char_to_int ch in
+        if i <> 0 then
+          change_board board' c (char_to_int ch) 
+        else board' in
+      (acc, List.fold_left fold_f cur_board chars) in
+  let acc, last_board = List.fold_left f ([], new_board) listnum in
+  last_board::acc
 
 let c00 = {pos = (0, 0, 0); value = None; val_opts = [0;1]}
 let c01 = {pos = (1, 0, 1); value = None; val_opts = [0;1]}
